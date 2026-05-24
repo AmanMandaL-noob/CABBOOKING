@@ -183,7 +183,10 @@ export default function CustomerTrackingMapInner({
     googlePolylines.current.forEach(p => p.setMap(null));
     googlePolylines.current = [];
 
-    // 3. Define Commute Custom Marker SVGs (incorporating commutes code)
+    // 3. Initialize boundary bounds instance early to prevent declaration crashes
+    const bounds = new google.maps.LatLngBounds();
+
+    // 4. Define Commute Custom Marker SVGs (incorporating commutes code)
     const markerIconConfig = {
       path: 'M10 27c-.2 0-.2 0-.5-1-.3-.8-.7-2-1.6-3.5-1-1.5-2-2.7-3-3.8-2.2-2.8-3.9-5-3.9-8.8C1 4.9 5 1 10 1s9 4 9 8.9c0 3.9-1.8 6-4 8.8-1 1.2-1.9 2.4-2.8 3.8-1 1.5-1.4 2.7-1.6 3.5-.3 1-.4 1-.6 1Z',
       fillOpacity: 1,
@@ -205,25 +208,7 @@ export default function CustomerTrackingMapInner({
       strokeColor: "#b91c1c",
     };
 
- if (driverPoint) {
-  const marker = new google.maps.Marker({
-    position: { lat: driverPoint[0], lng: driverPoint[1] },
-    map: map,
-    icon: {
-      url: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png", // Dedicated cab image
-      scaledSize: new google.maps.Size(40, 40),
-      origin: new google.maps.Point(0, 0),
-      anchor: new google.maps.Point(20, 20)
-    },
-    title: "Cab Location"
-  });
-  googleMarkers.current.push(marker);
-  bounds.extend(marker.getPosition());
-}
-
-    // 4. Draw markers
-    const bounds = new google.maps.LatLngBounds();
-
+    // 5. Draw markers and extend tracking map boundaries safely
     if (pickupPoint) {
       const marker = new google.maps.Marker({
         position: { lat: pickupPoint[0], lng: pickupPoint[1] },
@@ -239,8 +224,13 @@ export default function CustomerTrackingMapInner({
       const marker = new google.maps.Marker({
         position: { lat: driverPoint[0], lng: driverPoint[1] },
         map: map,
-        icon: gDriverIcon,
-        label: { text: "🚗", color: "#ffffff", fontSize: "11px" }
+        icon: {
+          url: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png", // Dedicated premium cab image
+          scaledSize: new google.maps.Size(40, 40),
+          origin: new google.maps.Point(0, 0),
+          anchor: new google.maps.Point(20, 20)
+        },
+        title: "Cab Location"
       });
       googleMarkers.current.push(marker);
       bounds.extend(marker.getPosition());
@@ -257,13 +247,13 @@ export default function CustomerTrackingMapInner({
       bounds.extend(marker.getPosition());
     }
 
-    // 5. Draw Double-Stroke Commute Polylines (outer thick outline + inner teal color)
+    // 6. Draw Double-Stroke Commute Polylines (outer thick outline + inner teal color)
     const lineCoords: any[] = [];
-    if (driverPoint) {
-      lineCoords.push({ lat: pickupPoint![0], lng: pickupPoint![1] });
+    if (driverPoint && pickupPoint) {
+      lineCoords.push({ lat: pickupPoint[0], lng: pickupPoint[1] });
       lineCoords.push({ lat: driverPoint[0], lng: driverPoint[1] });
-    } else if (destinationPoint) {
-      lineCoords.push({ lat: pickupPoint![0], lng: pickupPoint![1] });
+    } else if (destinationPoint && pickupPoint) {
+      lineCoords.push({ lat: pickupPoint[0], lng: pickupPoint[1] });
       lineCoords.push({ lat: destinationPoint[0], lng: destinationPoint[1] });
     }
 
@@ -287,7 +277,7 @@ export default function CustomerTrackingMapInner({
       googlePolylines.current.push(outerStroke, innerStroke);
     }
 
-    // 6. Adjust map boundary to encompass all markers
+    // 7. Adjust map boundary layout view context
     if (googleMarkers.current.length > 1) {
       map.fitBounds(bounds, { top: 50, bottom: 50, left: 50, right: 50 });
     } else {
