@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "apps/driver-app/.next",
+  "outputDirectory": "apps/customer-app/.next",
   "env": {
     "NODE_ENV": "production"
   },

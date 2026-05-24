@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 // @ts-ignore
@@ -49,7 +49,6 @@ interface DriverTrackingMapProps {
 
 /**
  * Sub-component to inject the Leaflet Routing Machine engine.
- * For drivers, the "start" is always their current GPS location.
  */
 const RoutingEngine = ({ start, end }: { start: Coordinates; end: Coordinates }) => {
   const map = useMap();
@@ -57,16 +56,16 @@ const RoutingEngine = ({ start, end }: { start: Coordinates; end: Coordinates })
   useEffect(() => {
     if (!map || !start || !end) return;
 
-    // @ts-ignore - L.Routing is injected by the plugin
-    const routingControl = L.Routing.control({
+    const Routing = (L as any).Routing;
+    const routingControl = Routing.control({
       waypoints: [
         L.latLng(start.lat, start.lng),
         L.latLng(end.lat, end.lng)
       ],
-      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      router: Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
       routeWhileDragging: false,
       addWaypoints: false,
-      show: false, 
+      show: false,
       itinerary: {
         containerClassName: 'hidden',
       },
@@ -106,7 +105,7 @@ function MapAutoFitter({ driver, pickup, destination, status }: any) {
     if (points.length > 1) {
       map.fitBounds(L.latLngBounds(points), { padding: [70, 70] });
     } else {
-      map.setView(points[0], 16);
+      map.setView(points[0], 15);
     }
   }, [driver, pickup, destination, status, map]);
 
@@ -114,8 +113,7 @@ function MapAutoFitter({ driver, pickup, destination, status }: any) {
 }
 
 /**
- * Immersive Map component for the Driver App.
- * Routes to Pickup if arriving, or to Destination if trip started.
+ * Immersive Map component for the Driver App Active Ride Screen.
  */
 export const DriverTrackingMap: React.FC<DriverTrackingMapProps> = ({
   driverLocation,
@@ -133,10 +131,21 @@ export const DriverTrackingMap: React.FC<DriverTrackingMapProps> = ({
 
   return (
     <div className={`relative h-full w-full overflow-hidden rounded-2xl border border-slate-200 shadow-inner ${className}`}>
-      {/* FORCE LEAFLET ROUTING PANEL TO HIDE */}
+      
+      {/* CRITICAL SHIELD: Leaflet inserts a hardcoded panel directly over map viewports.
+        This rule intercepts it and completely eliminates it from rendering.
+      */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .leaflet-routing-container, .leaflet-routing-error {
+        .leaflet-routing-container,
+        .leaflet-routing-error,
+        .leaflet-bar.leaflet-routing-container,
+        .leaflet-right.leaflet-top .leaflet-routing-container {
           display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          height: 0 !important;
+          width: 0 !important;
+          pointer-events: none !important;
         }
       `}} />
 

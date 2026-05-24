@@ -8,6 +8,7 @@
     "shared"
   ],
   "scripts": {
+    "postinstall": "npm run build -w shared",
     "dev:backend": "npm run dev -w backend",
     "dev:customer": "npm run dev -w apps/customer-app",
     "dev:driver": "npm run dev -w apps/driver-app",
