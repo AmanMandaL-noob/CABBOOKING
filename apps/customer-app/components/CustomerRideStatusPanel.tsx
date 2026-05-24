@@ -1,6 +1,6 @@
 "use client";
 
-import { useCustomerRideStore } from "../stores/authStore"; // Adjust this path to your actual store file
+import { useCustomerRideStore } from "../stores/rideStore";
 import { RideStatusBadge } from "./RideStatusBadge";
 
 export function CustomerRideStatusPanel() {
