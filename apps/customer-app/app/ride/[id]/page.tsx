@@ -201,11 +201,9 @@ export default function RidePage() {
             </>
           ) : (
             <>
-              {user && (
+              {user && params.id && (
                 <LiveTracking 
-                  customerId={user.id} 
-                  token={user.token}
-                  initialLocation={pickup}
+                  rideId={params.id}
                 />
               )}
             </>
