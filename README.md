@@ -1,3 +1,5 @@
+# CABBOOKING
+
 # CAB Booking System
 
 A modern, real-time cab booking application built with Next.js, Express, MongoDB, and Socket.IO. Features live driver tracking, OTP verification, and real-time ride status updates.
@@ -211,47 +213,10 @@ GET    /api/driver/history            - Get ride history
 POST   /api/tracking/location         - Update location
 ```
 
----
 
-## 🔐 Security Features
 
-- **JWT Authentication**: Secure token-based auth for all protected routes
-- **OTP Verification**: One-time passwords for ride start and completion
-- **Password Hashing**: bcryptjs for secure password storage
-- **Socket Authorization**: Token validation on Socket.IO connections
-- **Namespace Isolation**: Customer and driver namespaces don't cross-communicate
-- **Rate Limiting**: Express rate limiter on authentication endpoints
 
----
 
-## 🔄 Real-time Communication
-
-### Socket.IO Events
-
-**Customer Namespace** (`/customer`):
-- `driverAssigned` - Driver assigned to ride
-- `driverLocation` - Real-time driver location
-- `rideStatus` - Ride status changes
-
-**Driver Namespace** (`/driver`):
-- `rideRequest` - New ride request
-- `rideStatus` - Status updates
-- `customerLocation` - Customer location updates
-
----
-
-## 📊 Ride Flow
-
-```
-1. Customer books ride → Ride created (REQUESTED)
-2. Driver accepts → Ride status: ACCEPTED
-3. Driver navigates → Ride status: ARRIVING
-4. Driver verifies OTP → Ride status: STARTED
-5. Trip completes → Ride status: COMPLETED
-6. Customer rates → Ride archived
-```
-
----
 
 ## 🛠️ Development
 
@@ -277,28 +242,9 @@ npm run typecheck:all
 cd backend && npm run typecheck
 cd apps/customer-app && npm run typecheck
 cd apps/driver-app && npm run typecheck
-```
 
-### Code Structure Rules
 
-- **No shared stores** between customer and driver apps
-- **No shared socket clients** between apps
-- **No shared authentication guards** except types
-- **All business logic separation** - customer and driver features are isolated
-- **Shared code** limited to: DTOs, constants, types, socket event names
 
----
-
-## 📦 Shared Package
-
-Located in `shared/src/`
-
-Contains:
-- **Types** - TypeScript interfaces (RideDto, DriverLocationDto, etc.)
-- **Constants** - App-wide constants (RIDE_STATUS, SOCKET_EVENTS)
-- **Helpers** - Socket room/namespace helpers
-
----
 
 ## 🐛 Troubleshooting
 
@@ -332,20 +278,7 @@ taskkill /PID <PID> /F
 
 ---
 
-## 📝 Environment Variables Reference
 
-### Backend
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/cab-booking` |
-| `JWT_SECRET` | JWT signing secret | (required) |
-| `OTP_EXPIRY_MINUTES` | OTP validity duration | `10` |
-| `PORT` | Server port | `5000` |
-| `NODE_ENV` | Environment | `development` |
-| `CORS_ORIGINS` | Allowed origins | `http://localhost:*` |
-
----
 
 ## 🚢 Deployment
 
@@ -367,20 +300,4 @@ cd apps/driver-app
 npm run build
 npm start -- -p 3001
 ```
-
----
-
-## 📄 License
-
-This project is proprietary and confidential.
-
----
-
-## 🤝 Support
-
-For issues or questions, refer to the inline code comments and TypeScript types for detailed documentation.
-
----
-
-**Last Updated**: May 2026
 

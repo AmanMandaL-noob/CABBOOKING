@@ -1,0 +1,16 @@
+@import "leaflet/dist/leaflet.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  min-height: 100%;
+  background: #f6f8fb;
+  color: #18212f;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
