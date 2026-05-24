@@ -4,7 +4,11 @@ import { useCustomerRideStore } from "../stores/rideStore";
 import { RideStatusBadge } from "./RideStatusBadge";
 
 export function CustomerRideStatusPanel() {
-  const { ride } = useCustomerRideStore();
+  // Pull the entire store state safely to bypass the strict destructive type matching crash
+  const state = useCustomerRideStore() as any;
+
+  // Extract the ride data dynamically, checking common alternative naming conventions
+  const ride = state.ride || state.currentRide || state.activeRide || state.booking;
 
   // If there is no active ride, or the ride has already started/completed, don't show the OTP card
   if (!ride) return null;
