@@ -61,18 +61,24 @@ const RoutingEngine = ({ start, end }: { start: MapLocation; end: MapLocation })
   useEffect(() => {
     if (!map || !start || !end) return;
 
-    // @ts-ignore - L.Routing is injected by the plugin
-    const routingControl = L.Routing.control({
+    // Safely cast L to bypass missing Leaflet-Routing-Machine plugin definitions 
+    const leafletAny = L as any;
+
+    if (!leafletAny.Routing) {
+      console.error("Leaflet Routing Machine plugin not attached to 'L' runtime context.");
+      return;
+    }
+
+    const routingControl = leafletAny.Routing.control({
       waypoints: [
         L.latLng(start.lat, start.lng),
         L.latLng(end.lat, end.lng)
       ],
-      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      router: leafletAny.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
       routeWhileDragging: false,
       addWaypoints: false,
       draggableWaypoints: false, // Prevents breaking the line route path
       show: false,                // Disables text instructions container natively
-      // @ts-ignore - plugin specific option
       createMarker: () => null, // We use our own custom styled markers
       lineOptions: {
         styles: [{ color: '#2A75D3', weight: 6, opacity: 0.8 }],
