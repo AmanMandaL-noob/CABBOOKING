@@ -96,7 +96,7 @@ export function BookingCard() {
         const results = await geocodingService.forward(pickupSearch);
         if (results && results.length > 0) {
           const transformed = results.map((item: any, idx: number) => ({
-            place_id: (item.label || "pickup") + "-" + idx,
+            place_id: idx,
             display_name: item.label,
             lat: String(item.latitude),
             lon: String(item.longitude)
@@ -123,7 +123,7 @@ export function BookingCard() {
         const results = await geocodingService.forward(destSearch);
         if (results && results.length > 0) {
           const transformed = results.map((item: any, idx: number) => ({
-            place_id: (item.label || "dest") + "-" + idx,
+            place_id: idx,
             display_name: item.label,
             lat: String(item.latitude),
             lon: String(item.longitude)
