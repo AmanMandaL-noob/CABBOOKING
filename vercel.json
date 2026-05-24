@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "apps/driver-app/.next",
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "installCommand": "npm install"
+}
