@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+// @ts-ignore: Cannot find module or type declarations for side-effect import of 'leaflet/dist/leaflet.css'.
 import 'leaflet/dist/leaflet.css';
 // @ts-ignore
 import 'leaflet-routing-machine';

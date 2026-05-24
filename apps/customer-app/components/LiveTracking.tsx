@@ -25,7 +25,7 @@ function CenterMap({ coords }: { coords: Coordinates }) {
   return null;
 }
 
-export default function LiveTrackingInner({ rideId }: { rideId: string }) {
+export function LiveTracking({ rideId }: { rideId: string }) {
   const [driverLocation, setDriverLocation] = useState<Coordinates | null>(null);
   const [rideStatus, setRideStatus] = useState<string>("ACCEPTED");
   const [otp, setOtp] = useState<string>("");

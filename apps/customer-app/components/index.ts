@@ -4,7 +4,7 @@ export { BookingCard } from "./BookingCard";
 export { CustomerTrackingMap } from "./CustomerTrackingMap";
 export { default as CustomerTrackingMapInner } from "./CustomerTrackingMapInner";
 export { LiveTracking } from "./LiveTracking";
-export { default as LiveTrackingInner } from "./LiveTrackingInner";
+export { default as LiveTrackingInner } from "./LiveTracking";
 export { RideStatusBadge } from "./RideStatusBadge";
 export { AuthForm } from "./AuthForm";
 
