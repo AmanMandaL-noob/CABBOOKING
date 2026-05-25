@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\"",
     "dev": "next dev -H 0.0.0.0 -p 4000",
-    "build": "next build",
+    "build": "npm run build --prefix ../../shared && next build",
     "start": "next start -H 0.0.0.0 -p 4000",
     "typecheck": "tsc --noEmit"
   },

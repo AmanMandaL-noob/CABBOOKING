@@ -55,13 +55,13 @@ const RoutingEngine = ({ start, end }: { start: Coordinates; end: Coordinates })
   useEffect(() => {
     if (!map || !start || !end) return;
 
-    // @ts-ignore - L.Routing is injected by the plugin
-    const routingControl = L.Routing.control({
+    const leafletAny = L as any;
+    const routingControl = leafletAny.Routing.control({
       waypoints: [
         L.latLng(start.lat, start.lng),
         L.latLng(end.lat, end.lng)
       ],
-      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      router: leafletAny.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
       routeWhileDragging: false,
       addWaypoints: false,
       show: false, 
