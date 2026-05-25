@@ -29,25 +29,13 @@ export default function DriverDashboard() {
 
   // 1. Memoized callback to stream telemetry data back to your server API
   const handleLocationUpdate = useCallback(async (lat: number, lng: number) => {
-    if (!user?.id && !user?.token) return; // Prevent firing if pilot isn't fully authenticated
+    if (!user?.id || !user?.token) return; // Prevent firing if pilot isn't fully authenticated
     
     try {
       // Syncing local application state
       setLiveLocation({ lat, lng });
 
-      // Broadcasting the telemetry coordinate frame up to your backend database route
-      await fetch(`/api/drivers/${user.id}/location`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}` // Attaching token if required by security guards
-        },
-        body: JSON.stringify({
-          latitude: lat,
-          longitude: lng,
-          timestamp: new Date().toISOString()
-        })
-      });
+      await driverApi.updateLocation(user.token, { lat, lng });
     } catch (err) {
       console.error("Failed pushing driver telemetry upstream:", err);
     }
@@ -56,17 +44,20 @@ export default function DriverDashboard() {
   // 2. High-precision background hardware listener loop
   useEffect(() => {
     if (!user) return;
+    let watchId: number | undefined;
+    let cancelled = false;
 
     // Grab the initial location immediately on app mounting setup
     detectHighPrecisionLocation()
       .then((coords) => {
+        if (cancelled) return;
         if (coords) {
           setGpsError(null); // Clear errors on successful acquisition
           handleLocationUpdate(coords.lat, coords.lng);
         }
       })
       .catch((err) => {
-        console.error("Initial GPS lock failed: ", err);
+        console.warn("Initial GPS lock unavailable; using fallback location.", err);
       });
 
     // Spin up browser geolocation engine watching for hardware shifts
@@ -75,27 +66,29 @@ export default function DriverDashboard() {
       return;
     }
 
-    const watchId = navigator.geolocation.watchPosition(
+    const startWatching = () => {
+      watchId = navigator.geolocation.watchPosition(
       (position) => {
         setGpsError(null); // Clear error state as soon as fresh coordinates hit the pipe
         const { latitude, longitude } = position.coords;
         handleLocationUpdate(latitude, longitude);
       },
       (error) => {
-        console.error("Error securing live driver GPS stream: ", error.message);
-        
         // Map error codes to understandable UI notification labels
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setGpsError("Location access denied. Please click the padlock/settings icon in your browser address bar and change Location permission to 'Allow'.");
             break;
           case error.POSITION_UNAVAILABLE:
+            console.warn("Driver GPS position is unavailable:", error.message);
             setGpsError("Hardware GPS network link is currently unavailable or satellite signals are weak.");
             break;
           case error.TIMEOUT:
+            console.warn("Driver GPS request timed out:", error.message);
             setGpsError("GPS telemetry request timed out waiting for active satellite synchronization lock.");
             break;
           default:
+            console.warn("Driver GPS tracking warning:", error.message);
             setGpsError(`Telemetry Tracking Error: ${error.message}`);
         }
       },
@@ -104,10 +97,30 @@ export default function DriverDashboard() {
         maximumAge: 0,            // Do not use cached telemetry snapshots
         timeout: 10000            // Fail loop if coordinate calculation hangs longer than 10s
       }
-    );
+      );
+    };
+
+    if ("permissions" in navigator && navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((permission) => {
+          if (cancelled) return;
+          if (permission.state === "denied") {
+            setGpsError("Location access denied. Please click the padlock/settings icon in your browser address bar and change Location permission to 'Allow'.");
+            return;
+          }
+          startWatching();
+        })
+        .catch(startWatching);
+    } else {
+      startWatching();
+    }
 
     // Teardown listener loop if the pilot navigates away from operational dashboard screen
-    return () => navigator.geolocation.clearWatch(watchId);
+    return () => {
+      cancelled = true;
+      if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
+    };
   }, [user, handleLocationUpdate]);
 
   // Existing WebSockets subscription pipeline hook loop

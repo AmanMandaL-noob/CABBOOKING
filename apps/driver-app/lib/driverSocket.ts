@@ -14,8 +14,14 @@ const getSocketUrl = () => {
 };
 
 let socket: Socket | undefined;
+let socketToken: string | undefined;
 
 export function getDriverSocket(token: string) {
+  if (socket && socketToken !== token) {
+    socket.disconnect();
+    socket = undefined;
+  }
+
   if (!socket) {
     const socketUrl = getSocketUrl();
     socket = io(`${socketUrl}${SOCKET_NAMESPACES.driver}`, {
@@ -25,8 +31,15 @@ export function getDriverSocket(token: string) {
       reconnectionDelay: 1000,
       transports: ["websocket", "polling"]
     });
+    socketToken = token;
   }
   return socket;
+}
+
+export function disconnectDriverSocket() {
+  socket?.disconnect();
+  socket = undefined;
+  socketToken = undefined;
 }
 
 export function subscribeToRideRequests(token: string, onRide: (ride: RideDto) => void) {

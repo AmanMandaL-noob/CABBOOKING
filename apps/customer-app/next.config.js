@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  output: 'export', // <-- This tells Next.js to generate the static 'out' folder
+  reactStrictMode: false,
 };
 
 export default nextConfig;

@@ -14,8 +14,14 @@ const getSocketUrl = () => {
 };
 
 let socket: Socket | undefined;
+let socketToken: string | undefined;
 
 export function getCustomerSocket(token: string) {
+  if (socket && socketToken !== token) {
+    socket.disconnect();
+    socket = undefined;
+  }
+
   if (!socket) {
     const socketUrl = getSocketUrl();
     socket = io(`${socketUrl}${SOCKET_NAMESPACES.customer}`, {
@@ -26,8 +32,15 @@ export function getCustomerSocket(token: string) {
       reconnectionDelay: 1000,
       transports: ["websocket", "polling"]
     });
+    socketToken = token;
   }
   return socket;
+}
+
+export function disconnectCustomerSocket() {
+  socket?.disconnect();
+  socket = undefined;
+  socketToken = undefined;
 }
 
 export function subscribeToCustomerRide(
@@ -40,7 +53,20 @@ export function subscribeToCustomerRide(
   }
 ) {
   const client = getCustomerSocket(token);
-  client.emit("ride:join", { rideId });
+  
+  // Ensure socket is connected before joining room
+  const joinRoom = () => {
+    client.emit("ride:join", { rideId });
+    console.log(`[Customer Socket] Joining ride room: ${rideId}`);
+  };
+
+  // If already connected, join immediately; otherwise wait for connect event
+  if (client.connected) {
+    joinRoom();
+  } else {
+    client.once("connect", joinRoom);
+  }
+
   client.on(CUSTOMER_EVENTS.driverAssigned, handlers.onDriverAssigned);
   client.on(CUSTOMER_EVENTS.driverLocation, handlers.onDriverLocation);
   client.on(CUSTOMER_EVENTS.rideStatus, handlers.onRideStatus);

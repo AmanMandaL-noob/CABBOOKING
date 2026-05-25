@@ -14,6 +14,7 @@ app.use(cors({ origin: corsOriginDelegate, credentials: true }));
 app.use(express.json());
 app.use(rateLimit({ windowMs: 60_000, max: 120 }));
 
+app.get("/", (_req, res) => res.json({ success: true, data: { message: "CAB Booking API", version: "1.0.0", health: "ok" } }));
 app.get("/health", (_req, res) => res.json({ success: true, data: { status: "ok" } }));
 
 app.use("/api/auth", authRoutes);

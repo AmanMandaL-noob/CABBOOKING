@@ -16,7 +16,7 @@ async function bootstrap() {
 
   configureSockets(io);
 
-  httpServer.listen(env.PORT, () => {
+  httpServer.listen(env.PORT, "127.0.0.1", () => {
     console.log(`API and Socket.IO server running on port ${env.PORT}`);
   });
 }

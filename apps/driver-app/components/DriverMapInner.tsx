@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 
@@ -130,6 +130,7 @@ export default function DriverMapInner({
   destination?: Coordinates;
 }) {
   const center: [number, number] = current ? [current.lat, current.lng] : [28.6139, 77.209];
+  const mapKey = useMemo(() => `driver-map-${Math.random().toString(36).slice(2)}`, []);
 
   return (
     /* Added explicit height classes & minimum sizes to the wrapper to prevent map collapse */
@@ -150,6 +151,7 @@ export default function DriverMapInner({
       `}} />
 
       <MapContainer 
+        key={mapKey}
         center={center} 
         zoom={13} 
         zoomControl={false} 

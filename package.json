@@ -12,6 +12,7 @@
     "dev:backend": "npm run dev -w backend",
     "dev:customer": "npm run dev -w apps/customer-app",
     "dev:driver": "npm run dev -w apps/driver-app",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:customer\" \"npm run dev:driver\"",
     "build": "npm run build -w shared && npm run build -w backend && npm run build -w apps/customer-app && npm run build -w apps/driver-app",
     "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w apps/customer-app && npm run typecheck -w apps/driver-app"
   },
@@ -19,6 +20,7 @@
     "axios": "^1.7.7"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "typescript": "^5.6.3"
   }
   "overrides": {

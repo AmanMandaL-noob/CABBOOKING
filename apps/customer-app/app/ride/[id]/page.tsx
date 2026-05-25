@@ -72,7 +72,7 @@ export default function RidePage() {
     setCompleting(true);
     setError("");
     try {
-      const ride = await customerApi.cancelRideWithOtp(user.token, currentRide.id, completionOtp);
+      const ride = await customerApi.completeRideWithOtp(user.token, currentRide.id, completionOtp);
       setRide(ride);
       setCompletionOtp("");
     } catch (err) {

@@ -1,10 +1,11 @@
-// Enhanced Immersive UI Components for Customer App
-
 export { BookingCard } from "./BookingCard";
 export { CustomerTrackingMap } from "./CustomerTrackingMap";
 export { default as CustomerTrackingMapInner } from "./CustomerTrackingMapInner";
 export { LiveTracking } from "./LiveTracking";
-export { default as LiveTrackingInner } from "./LiveTrackingInner";
+
+// FIX: Changed from 'default' to 'LiveTracking' to match the named export in LiveTracking.tsx
+export { LiveTracking as LiveTrackingInner } from "./LiveTracking";
+
 export { RideStatusBadge } from "./RideStatusBadge";
 export { AuthForm } from "./AuthForm";
 

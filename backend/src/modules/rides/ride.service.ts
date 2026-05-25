@@ -53,7 +53,7 @@ export async function acceptRide(rideId: string, driverId: string) {
   if (!ride) throw new HttpError(409, "Ride is no longer available");
 
   const customer = await Customer.findById(ride.customerId);
-  if (!customer?.email) throw new HttpError(404, "Customer email not found for OTP delivery");
+  if (!customer) throw new HttpError(404, "Customer not found");
 
   const startOtp = generateOtp();
   ride.startOtpHash = await hashOtp(startOtp);
@@ -64,11 +64,16 @@ export async function acceptRide(rideId: string, driverId: string) {
   ride.endOtp = undefined;
   await ride.save();
 
-  await sendMail({
-    to: customer.email,
-    subject: "Your ride start OTP",
-    text: `Your cab start OTP is ${startOtp}. Share this with your driver to start the trip. It expires in ${env.OTP_EXPIRY_MINUTES} minutes.`
-  });
+  // Send email if customer has email, otherwise log for development
+  if (customer?.email) {
+    await sendMail({
+      to: customer.email,
+      subject: "Your ride start OTP",
+      text: `Your cab start OTP is ${startOtp}. Share this with your driver to start the trip. It expires in ${env.OTP_EXPIRY_MINUTES} minutes.`
+    });
+  } else {
+    console.log(`[DEV] Start OTP for customer ${ride.customerId}: ${startOtp}`);
+  }
 
   const dto = toRideDto(ride);
   const customerNs = getSocketServer().of(SOCKET_NAMESPACES.customer);
@@ -109,17 +114,22 @@ export async function startRideWithOtp(rideId: string, driverId: string, otp: st
   if (!matchesOtp) throw new HttpError(400, "Invalid start OTP");
 
   const driver = await Driver.findById(driverId);
-  if (!driver?.email) throw new HttpError(404, "Driver email not found for OTP delivery");
+  if (!driver) throw new HttpError(404, "Driver not found");
 
   const endOtp = generateOtp();
   const endOtpHash = await hashOtp(endOtp);
   const endOtpExpiresAt = new Date(Date.now() + env.OTP_EXPIRY_MINUTES * 60_000);
 
-  await sendMail({
-    to: driver.email,
-    subject: "Your ride cancellation OTP",
-    text: `Your ride cancellation OTP is ${endOtp}. Share this with the customer if they wish to cancel the ride mid-way. It expires in ${env.OTP_EXPIRY_MINUTES} minutes.`
-  });
+  // Send email if driver has email, otherwise log for development
+  if (driver?.email) {
+    await sendMail({
+      to: driver.email,
+      subject: "Your ride cancellation OTP",
+      text: `Your ride cancellation OTP is ${endOtp}. Share this with the customer if they wish to cancel the ride mid-way. It expires in ${env.OTP_EXPIRY_MINUTES} minutes.`
+    });
+  } else {
+    console.log(`[DEV] End OTP for driver ${driverId}: ${endOtp}`);
+  }
 
   ride.status = RIDE_STATUS.started;
   ride.startOtpHash = undefined;

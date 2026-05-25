@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 // @ts-ignore: Cannot find module or type declarations for side-effect import of 'leaflet/dist/leaflet.css'.
@@ -123,6 +123,8 @@ export const DriverTrackingMap: React.FC<DriverTrackingMapProps> = ({
   rideStatus,
   className = ""
 }) => {
+  const mapKey = useMemo(() => `driver-tracking-map-${Math.random().toString(36).slice(2)}`, []);
+
   // Determine the active navigation target based on ride lifecycle
   const navigationTarget = (rideStatus === 'ACCEPTED' || rideStatus === 'ARRIVING') 
     ? pickupLocation 
@@ -151,6 +153,7 @@ export const DriverTrackingMap: React.FC<DriverTrackingMapProps> = ({
       `}} />
 
       <MapContainer 
+        key={mapKey}
         center={[driverLocation.lat, driverLocation.lng]} 
         zoom={15} 
         zoomControl={false}

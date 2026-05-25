@@ -24,14 +24,13 @@ const destIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// FIXED: Changed from standard gold pin to a premium, scalable vehicle icon for Leaflet fallback
 const driverIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/744/744465.png",
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [36, 36],
-  iconAnchor: [18, 18],
-  popupAnchor: [0, -18],
-  shadowSize: [36, 36]
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 function toLatLng(input?: Coordinates): [number, number] | null {
@@ -41,7 +40,7 @@ function toLatLng(input?: Coordinates): [number, number] | null {
   return [input.lat, input.lng];
 }
 
-// FIXED: Modified view handler to track and navigate smoothly alongside the moving driver
+// Fit map viewport automatically to encapsulate all active route coordinates for Leaflet
 function FitRouteBounds({
   pickup,
   destination,
@@ -54,20 +53,15 @@ function FitRouteBounds({
   const map = useMap();
 
   useEffect(() => {
-    // If a driver is live, center the camera directly on the vehicle with high zoom (Navigation Mode)
-    if (driver) {
-      map.flyTo(driver, 16, { animate: true, duration: 1.5 });
-      return;
-    }
-
     const points: L.LatLngExpression[] = [pickup];
     if (destination) points.push(destination);
+    if (driver) points.push(driver);
 
     if (points.length > 1) {
       const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: false });
     } else {
-      map.setView(pickup, 14, { animate: true });
+      map.setView(pickup, 14, { animate: false });
     }
   }, [pickup, destination, driver, map]);
 
@@ -94,7 +88,7 @@ function loadGoogleMapsScript(apiKey?: string): Promise<void> {
   if (googleMapsLoadingPromise) return googleMapsLoadingPromise;
 
   googleMapsLoadingPromise = new Promise((resolve, reject) => {
-    const key = apiKey || "AIzaSyAam8BNxtQ6Gal4W6SMNCxeP4nLnqmhJqs"; 
+    const key = apiKey || "AIzaSyAam8BNxtQ6Gal4W6SMNCxeP4nLnqmhJqs"; // Fallback to firebase key
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?libraries=places&key=${key}`;
     script.async = true;
@@ -189,10 +183,10 @@ export default function CustomerTrackingMapInner({
     googlePolylines.current.forEach(p => p.setMap(null));
     googlePolylines.current = [];
 
-    // 3. Initialize boundary bounds instance early to prevent declaration crashes
+    // 3. INITIALIZE BOUNDS EARLY: Explicitly declared before ANY marker configuration runs
     const bounds = new google.maps.LatLngBounds();
 
-    // 4. Define Commute Custom Marker SVGs (incorporating commutes code)
+    // 4. Define Commute Custom Marker SVGs
     const markerIconConfig = {
       path: 'M10 27c-.2 0-.2 0-.5-1-.3-.8-.7-2-1.6-3.5-1-1.5-2-2.7-3-3.8-2.2-2.8-3.9-5-3.9-8.8C1 4.9 5 1 10 1s9 4 9 8.9c0 3.9-1.8 6-4 8.8-1 1.2-1.9 2.4-2.8 3.8-1 1.5-1.4 2.7-1.6 3.5-.3 1-.4 1-.6 1Z',
       fillOpacity: 1,
@@ -204,17 +198,17 @@ export default function CustomerTrackingMapInner({
 
     const gPickupIcon = {
       ...markerIconConfig,
-      fillColor: "#10b981", 
+      fillColor: "#10b981", // Emerald active green
       strokeColor: "#047857",
     };
 
     const gDestIcon = {
       ...markerIconConfig,
-      fillColor: "#ef4444", 
+      fillColor: "#ef4444", // Crimson active red
       strokeColor: "#b91c1c",
     };
 
-    // 5. Draw markers and extend tracking map boundaries safely
+    // 5. Draw Markers & Populate Bounds top-down safely
     if (pickupPoint) {
       const marker = new google.maps.Marker({
         position: { lat: pickupPoint[0], lng: pickupPoint[1] },
@@ -231,10 +225,10 @@ export default function CustomerTrackingMapInner({
         position: { lat: driverPoint[0], lng: driverPoint[1] },
         map: map,
         icon: {
-          url: "https://cdn-icons-png.flaticon.com/512/744/744465.png", // Unified vehicle asset matching Leaflet
-          scaledSize: new google.maps.Size(36, 36),
+          url: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png", // Dedicated cab vehicle asset
+          scaledSize: new google.maps.Size(40, 40),
           origin: new google.maps.Point(0, 0),
-          anchor: new google.maps.Point(18, 18)
+          anchor: new google.maps.Point(20, 20)
         },
         title: "Cab Location"
       });
@@ -253,7 +247,7 @@ export default function CustomerTrackingMapInner({
       bounds.extend(marker.getPosition());
     }
 
-    // 6. Draw Double-Stroke Commute Polylines (outer thick outline + inner teal color)
+    // 6. Draw Double-Stroke Commute Polylines
     const lineCoords: any[] = [];
     if (driverPoint && pickupPoint) {
       lineCoords.push({ lat: pickupPoint[0], lng: pickupPoint[1] });
@@ -266,7 +260,7 @@ export default function CustomerTrackingMapInner({
     if (lineCoords.length > 1) {
       const outerStroke = new google.maps.Polyline({
         path: lineCoords,
-        strokeColor: "#0f172a", 
+        strokeColor: "#0f172a",
         strokeOpacity: 0.8,
         strokeWeight: 7,
         map: map
@@ -274,7 +268,7 @@ export default function CustomerTrackingMapInner({
 
       const innerStroke = new google.maps.Polyline({
         path: lineCoords,
-        strokeColor: "#0f766e", 
+        strokeColor: "#0f766e",
         strokeOpacity: 1.0,
         strokeWeight: 4,
         map: map
@@ -283,10 +277,8 @@ export default function CustomerTrackingMapInner({
       googlePolylines.current.push(outerStroke, innerStroke);
     }
 
-    // FIXED: Continuous fluid camera tracking mode when driver moves
-    if (driverPoint) {
-      map.panTo({ lat: driverPoint[0], lng: driverPoint[1] });
-    } else if (googleMarkers.current.length > 1) {
+    // 7. Adjust viewport bounds setup
+    if (googleMarkers.current.length > 1) {
       map.fitBounds(bounds, { top: 50, bottom: 50, left: 50, right: 50 });
     } else {
       map.setCenter({ lat: center[0], lng: center[1] });
@@ -309,7 +301,7 @@ export default function CustomerTrackingMapInner({
     return (
       <div 
         ref={googleMapRef} 
-        className="h-80 overflow-hidden rounded-2xl border border-slate-200 shadow-inner md:h-[520px] relative z-10 isolate"
+        className="h-80 overflow-hidden rounded-2xl border border-slate-200 shadow-inner md:h-[520px] relative z-10"
       />
     );
   }
@@ -329,20 +321,13 @@ export default function CustomerTrackingMapInner({
       ? [pickupPoint, destinationPoint]
       : undefined;
 
-  // FIXED: Explicitly added attributionControl={false} and zoomControl={false} to stop corner info overlays
   return (
-    <div className="h-80 overflow-hidden rounded-2xl border border-slate-200 shadow-inner md:h-[520px] relative z-10 isolate">
-      <MapContainer 
-        center={center} 
-        zoom={13} 
-        scrollWheelZoom 
-        attributionControl={false}
-        zoomControl={false}
-        className="h-full w-full"
-      >
+    <div className="h-80 overflow-hidden rounded-2xl border border-slate-200 shadow-inner md:h-[520px] relative z-10">
+      <MapContainer center={center} zoom={13} scrollWheelZoom className="h-full w-full">
         <FitRouteBounds pickup={pickupPoint} destination={destinationPoint} driver={driverPoint} />
         <MapClickHandler onMapClick={onMapClick} />
         <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
@@ -354,4 +339,4 @@ export default function CustomerTrackingMapInner({
       </MapContainer>
     </div>
   );
-            }
+}
