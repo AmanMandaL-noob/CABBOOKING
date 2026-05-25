@@ -6,8 +6,7 @@ import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 
 // IMPORTANT: Import css first
 import 'leaflet/dist/leaflet.css';
-// @ts-ignore
-import 'leaflet-routing-machine';
+import 'leaflet-routing-machine'; // Dynamic injection of L.Routing happens here
 import { Coordinates } from "@cab/shared";
 
 // Fix Leaflet's default marker asset icon pathing bug in Webpack/Next.js platforms
@@ -55,13 +54,13 @@ const RoutingEngine = ({ start, end }: { start: Coordinates; end: Coordinates })
   useEffect(() => {
     if (!map || !start || !end) return;
 
-    const leafletAny = L as any;
-    const routingControl = leafletAny.Routing.control({
+    // FIXED: Changed L.Routing to (L as any).Routing to bypass strict production type checking
+    const routingControl = (L as any).Routing.control({
       waypoints: [
         L.latLng(start.lat, start.lng),
         L.latLng(end.lat, end.lng)
       ],
-      router: leafletAny.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      router: (L as any).Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
       routeWhileDragging: false,
       addWaypoints: false,
       show: false, 
@@ -179,4 +178,4 @@ export default function DriverMapInner({
       </MapContainer>
     </div>
   );
-}
+        }

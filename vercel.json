@@ -1,8 +1,0 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "apps/customer-app/.next",
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "installCommand": "npm install"
-}

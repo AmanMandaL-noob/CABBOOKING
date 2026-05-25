@@ -9,6 +9,7 @@ interface CaptainDetailsProps {
   distanceAway?: number;
   estimatedArrival?: number;
   phoneNumber?: string;
+  onTrackDriverLive?: () => void; // FIXED: Added callback type definitions to props interface
 }
 
 export function CaptainDetails({
@@ -19,7 +20,8 @@ export function CaptainDetails({
   vehicleType = "Maruti Suzuki Swift",
   distanceAway = 2.5,
   estimatedArrival = 7,
-  phoneNumber = "+91 98765 43210"
+  phoneNumber = "+91 98765 43210",
+  onTrackDriverLive // FIXED: Destructured tracking handler callback instance here
 }: CaptainDetailsProps) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
@@ -79,7 +81,10 @@ export function CaptainDetails({
       </div>
 
       {/* Live Tracking Button */}
-      <button className="w-full mt-4 py-3 px-4 rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-xs transition-colors shadow-md active:scale-95">
+      <button 
+        onClick={onTrackDriverLive} // FIXED: Bound click callback method execution directly to the button event layer
+        className="w-full mt-4 py-3 px-4 rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-xs transition-colors shadow-md active:scale-95"
+      >
         📍 Track Driver Live
       </button>
     </div>
